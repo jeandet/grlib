@@ -15,6 +15,7 @@ use gaisler.memctrl.all;
 use gaisler.leon3.all;
 use gaisler.uart.all;
 use gaisler.misc.all;
+use gaisler.jtag.all;
 --pragma translate_off
 use gaisler.sim.all;
 --pragma translate_on
@@ -90,6 +91,7 @@ architecture rtl of leon3mp is
   signal dsui : dsu_in_type;
   signal dsuo : dsu_out_type;
 
+  signal tck, tckn, tms, tdi, tdo : std_ulogic;
 
   signal gpti : gptimer_in_type;
 
@@ -143,7 +145,7 @@ begin
   ahb0 : ahbctrl 		-- AHB arbiter/multiplexer
   generic map (defmast => CFG_DEFMST, split => CFG_SPLIT,
 	rrobin => CFG_RROBIN, ioaddr => CFG_AHBIO,
-	nahbm => CFG_NCPU+CFG_AHB_UART, nahbs => 8)
+	nahbm => CFG_NCPU+CFG_AHB_UART+CFG_AHB_JTAG, nahbs => 8)
 
   port map (rstn, clkm, ahbmi, ahbmo, ahbsi, ahbso);
 
@@ -186,6 +188,12 @@ begin
   end generate;
   uart_txd <= duo.txd;
   dui.rxd <= uart_rxd;
+
+  ahbjtaggen0 :if CFG_AHB_JTAG = 1 generate
+    ahbjtag0 : ahbjtag generic map(tech => fabtech, hindex => CFG_NCPU+CFG_AHB_UART)
+      port map(rstn, clkm, tck, tms, tdi, tdo, ahbmi, ahbmo(CFG_NCPU+CFG_AHB_UART),
+               open, open, open, open, open, open, open, '0');
+  end generate;
 
 
 ----------------------------------------------------------------------

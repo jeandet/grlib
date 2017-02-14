@@ -43,9 +43,12 @@ include $(GRLIB)/bin/Makefile
 
 ##################  project specific targets ##########################
 
-load-ram:ise
+leon3mp.bit:$(VHDLSIMFILES)
+	$(MAKE) ise
+
+load-ram:leon3mp.bit
 	xc3sprog -c ftdi -p0 leon3mp.bit
 
-load-flash:ise
+load-flash:leon3mp.bit
 	xc3sprog -c ftdi -p0 $(GRLIB)/boards/$(BOARD)/bscan_spi_s6lx25_ftg256.bit
 	xc3sprog -c ftdi -I leon3mp.bit
